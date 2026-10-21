@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, viewport-fit=cover" />
+  <title>Blog Narration Studio</title>
+  <link rel="stylesheet" href="/static/css/embed.css" />
+</head>
+<body>
+  <div class="ta-widget" id="widget" role="region" aria-label="Audio player">
+    <div class="ta-voices" id="voiceBar" role="radiogroup" aria-label="Voice agent" hidden></div>
+    <div class="ta-top">
+      <button class="ta-box" id="boxPlayBtn" type="button" aria-label="Play or pause" title="Play / Pause">
+        <span id="boxIcon">▶</span>
+      </button>
+      <div class="ta-controls">
+        <button class="ta-btn" id="backBtn" type="button" title="Back 10 seconds" aria-label="Back 10 seconds">−10s</button>
+        <button class="ta-btn" id="playBtn" type="button" title="Play or pause" aria-label="Play or pause">▶</button>
+        <button class="ta-btn" id="fwdBtn" type="button" title="Forward 10 seconds" aria-label="Forward 10 seconds">+10s</button>
+      </div>
+      <div class="ta-status" id="statusText">Waiting for article…</div>
+    </div>
+    <div class="ta-bottom">
+      <input type="range" id="seekBar" min="0" max="1000" value="0" aria-label="Seek" />
+      <span class="ta-time" id="timeLabel">0:00 / 0:00</span>
+    </div>
+    <div class="ta-progress" id="genProgress" hidden>
+      <div class="ta-progress-fill" id="genProgressFill"></div>
+    </div>
+    <p class="text-muted">Crafted and maintained by <a href="https://github.com/nareshsinhaoi" target="_blank">@nareshsinha</a> / Blog Narration Studio 1.7.0</p>
+  </div>
+  <audio id="audio" preload="none"></audio>
+  <script src="/static/js/embed-player.js"></script>
+  
+</body>
+</html>

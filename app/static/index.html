@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>VaniTTS · Blog Narration Studio</title>
+  <link rel="stylesheet" href="/static/css/style.css" />
+<base target="_blank">
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand"> 
+      <div class="logo">
+        <img src="/static/O-sm.png" alt="Outlook Studio" />
+      </div>
+      <div>
+        <h1>Audio</h1>
+        <p>Blog Narration Studio</p>
+      </div>
+    </div>
+    <span class="badge" id="engineBadge">Engine: Microsoft Edge neural (free)</span>
+  </header>
+  <main class="layout">
+    <section class="card editor-card">
+      <div class="card-head">
+        <h2>1 · Article Text</h2>
+        <span class="muted" id="counts">0 words · 0 characters</span>
+      </div>
+      <textarea id="textInput" placeholder="Paste your blog article here — long-form content, Hindi (हिन्दी), English (India) and Hinglish are supported…"></textarea>
+      <div class="editor-foot">
+        <span class="muted" id="estimate">Estimated audio duration: —</span>
+        <button class="btn ghost" id="clearBtn" type="button">Clear text</button>
+      </div>
+      <p class="hint" id="limitHint">Long articles are processed in chunks and stitched into a single seamless MP3.</p>
+    </section>
+
+    <aside class="card voice-card">
+      <h2>2 · Voice &amp; Language</h2>
+
+      <label class="field-label" for="engineSelect">TTS Engine</label>
+      <select id="engineSelect">
+        <option value="edge">Microsoft Edge neural voices (free, no key)</option>
+        <option value="google">Google Cloud TTS (premium, API key required)</option>
+      </select>
+
+      <div class="lang-tabs" role="tablist" aria-label="Language">
+        <button class="lang-tab active" data-lang="hi-IN" type="button" role="tab">हिन्दी · Hindi</button>
+        <button class="lang-tab" data-lang="en-IN" type="button" role="tab">English (India)</button>
+      </div>
+
+      <div id="voiceList" class="voice-list" role="radiogroup" aria-label="Voices"></div>
+
+      <label class="field-label" for="rateSlider">Speaking speed: <strong id="rateLabel">1.00×</strong></label>
+      <input type="range" id="rateSlider" min="0.75" max="1.5" step="0.05" value="1" />
+
+      <div class="voice-actions">
+        <button class="btn ghost" id="previewBtn" type="button">▶ Preview voice</button>
+        <span class="muted small" id="previewStatus"></span>
+      </div>
+      <p class="hint">Tip: for Hinglish (mixed Hindi + English) articles, choose a Hindi voice — neural Hindi voices pronounce embedded English words naturally.</p>
+    </aside>
+
+    <section class="card generate-card">
+      <div class="card-head"><h2>3 · Generate</h2></div>
+      <button class="btn primary big" id="generateBtn" type="button">Generate Audio</button>
+      <div class="progress-wrap" id="progressWrap" hidden>
+        <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+        <span class="muted" id="progressText">Starting…</span>
+      </div>
+      <p class="hint">Shortcut: Ctrl / Cmd + Enter</p>
+    </section>
+
+    <section class="card player-card" id="playerCard" hidden>
+      <div class="card-head">
+        <h2>4 · Listen &amp; Download</h2>
+        <span class="muted" id="playerMeta"></span>
+      </div>
+      <audio id="audio" preload="metadata"></audio>
+      <div class="player-controls">
+        <button class="btn icon" id="backBtn" title="Back 10 seconds" type="button" aria-label="Back 10 seconds">−10s</button>
+        <button class="btn icon primary" id="playBtn" title="Play / Pause" type="button" aria-label="Play or pause">▶</button>
+        <button class="btn icon" id="stopBtn" title="Stop" type="button" aria-label="Stop">■</button>
+        <button class="btn icon" id="fwdBtn" title="Forward 10 seconds" type="button" aria-label="Forward 10 seconds">+10s</button>
+      </div>
+      <div class="seek-row">
+        <span id="curTime" class="time">0:00</span>
+        <input type="range" id="seekBar" min="0" max="1000" value="0" aria-label="Seek" />
+        <span id="durTime" class="time">0:00</span>
+      </div>
+      <div class="player-foot">
+        <div class="vol-group">
+          <button class="btn icon" id="muteBtn" type="button" title="Mute" aria-label="Mute">🔊</button>
+          <input type="range" id="volSlider" min="0" max="100" value="100" aria-label="Volume" />
+        </div>
+        <a class="btn primary" id="downloadBtn" href="#" download>⬇ Download MP3</a>
+      </div>
+    </section>
+  </main>
+
+  <!-- <footer class="footer">
+    <p>VaniTTS · Enterprise TTS for blog narration · Hindi · English (India) · Hinglish-friendly</p>
+  </footer> -->
+  <footer class="footer">
+    <div class="footer-bottom">
+        <div class="container footer-bottom-inner">
+        <span>&copy; <span id="footerYear"></span> VaniTTS · Enterprise TTS for blog narration · Hindi · English (India) · Hinglish-friendly. All rights reserved.</span>
+        <span class="footer-version">@nareshsinha / v1.7.0</span>
+        </div>
+    </div>
+    </footer>
+
+  <div class="toast-wrap" id="toastWrap" aria-live="polite"></div>
+  <audio id="previewAudio" preload="none"></audio>
+  <script src="/static/js/app.js"></script>
+</body>
+</html>

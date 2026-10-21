@@ -1,0 +1,48 @@
+vanitts/
+├── .dockerignore                  # Keeps junk out of the Docker image
+├── .env.example                   # All environment variables, with sensible defaults
+├── Dockerfile                     # python:3.12-slim + ffmpeg → uvicorn
+├── docker-compose.yml             # Web service (+ commented PostgreSQL option)
+├── README.md                      # Setup, engines & pricing, API, testing, deployment
+├── requirements.txt               # Python dependencies (Google engine commented out)
+│
+├── app/
+│   ├── __init__.py
+│   ├── main.py                    # FastAPI app entrypoint, static mount, job-cleanup loop
+│   ├── config.py                  # pydantic-settings, loads .env (limits, engine, DB, TTL)
+│   ├── database.py                # SQLAlchemy engine/session (SQLite default, Postgres-ready)
+│   ├── models.py                  # JobRecord table — generation history persistence
+│   ├── schemas.py                 # Pydantic request/response models
+│   │
+│   ├── api/
+│   │   ├── __init__.py
+│   │   └── routes.py              # REST endpoints: /api/voices, /api/tts/jobs, /audio, /history
+│   │
+│   ├── tts/
+│   │   ├── __init__.py
+│   │   ├── base.py                # Voice / engine contracts + preview sample texts
+│   │   ├── edge_engine.py         # FREE engine: hi-IN & en-IN neural voices (no API key)
+│   │   ├── google_engine.py       # PREMIUM engine: Google Cloud TTS (needs credentials)
+│   │   └── manager.py             # Text chunking, async job processing, MP3 stitching
+│   │
+│   └── static/                    # Frontend (served at / and /static)
+│       ├── index.html             # Dashboard: editor, voice picker, generate, player
+│       ├── css/
+│       │   └── style.css          # Enterprise responsive styling
+│       └── js/
+│           └── app.js             # API client, custom audio player, progress polling
+│
+├── data/                          # Runtime storage (git-ignored, persisted via Docker volume)
+│   ├── .gitkeep
+│   └── audio/                     # Generated MP3s (auto-cleaned after JOB_TTL_SECONDS)
+│
+└── tests/
+    └── test_smoke.py              # Offline pytest suite (chunking, validation, mocked job lifecycle)
+
+
+(venv) D:\PY\vanitts>edge-tts --list-voices | findstr "hi-IN en-IN"
+en-IN-NeerjaExpressiveNeural       Female    General                Friendly, Positive
+en-IN-NeerjaNeural                 Female    General                Friendly, Positive
+en-IN-PrabhatNeural                Male      General                Friendly, Positive
+hi-IN-MadhurNeural                 Male      General                Friendly, Positive
+hi-IN-SwaraNeural                  Female    General                Friendly, Positive

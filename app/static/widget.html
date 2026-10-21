@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Audio Article Player · VaniTTS</title>
+  <link rel="stylesheet" href="/static/css/widget.css" />
+<base target="_blank">
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <div class="logo">
+        <img src="/static/O-sm.png" alt="Outlook Studio" />
+      </div>
+      <div>
+        <h1>Audio</h1>
+        <p>Blog Narration Studio</p>
+      </div>
+    </div>
+    <a class="btn ghost" href="/">← Studio Dashboard</a>
+  </header>
+
+  <main class="wrap">
+    <section class="card article-card">
+      <h2 id="articleTitle">Why Indian Blogs Are Finding Their Voice</h2>
+      <p class="muted" id="voiceLine">Preparing audio…</p>
+      <textarea id="articleText" spellcheck="false">Cockroach Janta Party (CJP) founder Abhijeet Dipke was detained by Delhi Police from his residence on Friday, minutes before he was scheduled to participate in the party’s ‘Lehra Do Tiranga’ march in the national capital.
+
+        This is the second time Dipke has been detained in a week. He was earlier detained shortly after arriving in Delhi from Mumbai for a protest against Chief Election Commissioner Gyanesh Kumar over alleged voter-list manipulation during the Special Intensive Revision (SIR) of electoral rolls.
+        
+        Before Dipke’s detention, Delhi Police personnel visited Rani Jhansi Road and served him a notice informing him that prohibitory orders under Section 163 of the Bharatiya Nagarik Suraksha Sanhita (BNSS) were in force in New Delhi. They asked him not to hold any gathering in violation of the law ahead of the proposed march.
+      </textarea>
+      <p class="hint">🎧 Audio generates automatically on page load — and regenerates 2 seconds after you stop editing. Switch the voice agent right in the player. Engine: edge</p>
+    </section>
+
+    <!-- TrinityAudio-style compact player widget -->
+    <div class="ta-widget" id="widget" role="region" aria-label="Audio player">
+      <div class="ta-voices" id="voiceBar" role="radiogroup" aria-label="Voice agent"></div>
+      <div class="ta-top">
+        <button class="ta-box" id="boxPlayBtn" type="button" aria-label="Play or pause" title="Play / Pause">
+          <span id="boxIcon">▶</span>
+        </button>
+        <div class="ta-controls">
+          <button class="ta-btn" id="backBtn" type="button" title="Back 10 seconds" aria-label="Back 10 seconds">−10s</button>
+          <button class="ta-btn" id="playBtn" type="button" title="Play or pause" aria-label="Play or pause">▶</button>
+          <button class="ta-btn" id="fwdBtn" type="button" title="Forward 10 seconds" aria-label="Forward 10 seconds">+10s</button>
+        </div>
+        <div class="ta-status" id="statusText">Preparing audio…</div>
+      </div>
+      <div class="ta-bottom">
+        <input type="range" id="seekBar" min="0" max="1000" value="0" aria-label="Seek" />
+        <span class="ta-time" id="timeLabel">0:00 / 0:00</span>
+      </div>
+      <div class="ta-progress" id="genProgress" hidden>
+        <div class="ta-progress-fill" id="genProgressFill"></div>
+      </div>
+    </div>
+    <audio id="audio" preload="none"></audio>
+  </main>
+
+  <footer class="footer">
+    <p>VaniTTS · Audio generates automatically — no buttons needed · English (India) · en-IN-NeerjaExpressiveNeural</p>
+  </footer>
+
+  <script src="/static/js/widget.js"></script>
+</body>
+</html>

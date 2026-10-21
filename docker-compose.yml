@@ -1,0 +1,31 @@
+services:
+  web:
+    build: .
+    container_name: vanitts-web
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    volumes:
+      - tts_data:/app/data
+    restart: unless-stopped
+
+  # --- Optional: PostgreSQL for generation history ---
+  # db:
+  #   image: postgres:16-alpine
+  #   container_name: vanitts-db
+  #   environment:
+  #     POSTGRES_USER: vanitts
+  #     POSTGRES_PASSWORD: vanitts
+  #     POSTGRES_DB: vanitts
+  #   volumes:
+  #     - pg_data:/var/lib/postgresql/data
+  #   restart: unless-stopped
+  #
+  # web would then use:
+  #   DATABASE_URL: postgresql+psycopg://vanitts:vanitts@db:5432/vanitts
+  #   depends_on: [db]
+
+volumes:
+  tts_data:
+  # pg_data:
