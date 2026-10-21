@@ -11,6 +11,10 @@ Convert blog articles into natural-sounding, downloadable **MP3 narration** in
 
 ---
 
+## Application Preview
+
+![VaniTTS Dashboard](screenshots/edge-tts.png)
+
 ## 1 · Features
 
 | Area | Details |
