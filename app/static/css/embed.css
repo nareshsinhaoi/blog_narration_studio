@@ -1,8 +1,5 @@
 /* ==========================================================
    VaniTTS · Embeddable Audio Player — neutral / system style
-   Same class names / IDs as before -> no HTML or JS changes.
-   Colours: neutral greys, follows the visitor's light/dark setting.
-   Retheme by editing only the variables below.
    ========================================================== */
 :root {
   --card: #ffffff;
@@ -11,8 +8,8 @@
   --muted: #86868b;
   --border: #e5e5ea;
   --track: #e5e5ea;
-  --accent: #1d1d1f;          /* primary action colour (neutral) */
-  --accent-text: #ffffff;     /* text on accent */
+  --accent: #1d1d1f;
+  --accent-text: #ffffff;
   --hover: #ececf0;
   --error: #d70015;
   --radius: 14px;
@@ -37,9 +34,7 @@
 }
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
 html, body { background: transparent; }
-
 body {
   font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Noto Sans Devanagari", "Helvetica Neue", Arial, sans-serif;
   color: var(--text);
@@ -62,6 +57,24 @@ body {
 }
 .ta-widget.generating { border-color: var(--muted); }
 
+/* ---------- Advertisement (Waiting State) ---------- */
+.ta-ad {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  margin-bottom: 12px;
+  border-radius: 10px;
+  overflow: hidden;
+  background: var(--surface);
+}
+.ta-ad img {
+  display: block; 
+  height: auto;
+  max-height: 320px;
+  object-fit: contain;
+}
+
 /* ---------- Voice selector ---------- */
 .ta-voices { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 14px; }
 .ta-voice {
@@ -79,9 +92,7 @@ body {
 .ta-voice.active { background: var(--accent); border-color: var(--accent); color: var(--accent-text); }
 .ta-tag { font-weight: 700; font-size: 11px; color: var(--muted); }
 .ta-tag.f, .ta-tag.m { color: var(--muted); }
-.ta-voice.active .ta-tag,
-.ta-voice.active .ta-tag.f,
-.ta-voice.active .ta-tag.m { color: inherit; opacity: .7; }
+.ta-voice.active .ta-tag { color: inherit; opacity: .7; }
 
 /* ---------- Top row ---------- */
 .ta-top { display: flex; align-items: center; gap: 14px; }
@@ -117,21 +128,115 @@ body {
 .ta-status { margin-left: auto; font-size: 11px; font-weight: 400; color: var(--muted); text-align: right; }
 .ta-status.error { color: var(--error); font-weight: 600; }
 
+/* ---------- Speed Toggle & Drawer ---------- */
+.ta-speed-toggle {
+  display: inline-flex; align-items: center; justify-content: center;
+  min-width: 44px; height: 32px; padding: 0 8px;
+  border: 1px solid var(--border); border-radius: 6px;
+  background: var(--surface); color: var(--text);
+  font: 600 12px/1 inherit; font-family: inherit; font-variant-numeric: tabular-nums;
+  cursor: pointer; margin-left: auto; /* Push to right, next to status */
+  transition: background .15s, border-color .15s;
+}
+.ta-speed-toggle:hover { background: var(--hover); border-color: var(--muted); }
+.ta-speed-toggle:focus-visible { outline: none; box-shadow: var(--ring); }
+
+.ta-speed-drawer {
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: color-mix(in srgb, var(--card) 95%, transparent);
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+}
+.ta-speed-drawer[hidden] { display: none; }
+
+.ta-slider {
+  position: relative;
+  width: 100%;
+  max-width: 320px;
+  user-select: none;
+}
+.ta-close-speed {
+  position: absolute;
+  right: -10px; top: -20px;
+  background: transparent; border: none;
+  color: var(--muted); font-size: 16px;
+  cursor: pointer; padding: 4px;
+}
+.ta-close-speed:hover { color: var(--text); }
+
+.ta-slider .bars {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  height: 24px;
+  padding: 0 4px;
+}
+.ta-slider .bar {
+  background: transparent;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  height: 100%;
+  width: 14px;
+}
+.ta-slider .bar-pipe {
+  display: block;
+  width: 2px;
+  height: 12px;
+  background-color: var(--muted);
+  border-radius: 1px;
+  transition: background-color 0.15s, height 0.15s;
+}
+.ta-slider .bar:hover .bar-pipe {
+  background-color: var(--text);
+  height: 16px;
+}
+.ta-slider .bar.active .bar-pipe {
+  background-color: var(--text);
+  height: 20px;
+  width: 3px;
+}
+.ta-slider .values {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 6px;
+  font-size: 11px;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+  padding: 0 4px;
+}
+.ta-slider .value {
+  opacity: 0;
+  text-align: center;
+  width: 14px;
+  transition: opacity 0.2s;
+  pointer-events: none;
+}
+.ta-slider .value.visible { opacity: 1; }
+.ta-slider .value.active-label { color: var(--text); font-weight: 700; }
+
 /* ---------- Seek row ---------- */
 .ta-bottom { display: flex; align-items: center; gap: 12px; margin-top: 14px; }
 
 #seekBar {
   flex: 1; height: 18px; background: transparent; cursor: pointer;
   -webkit-appearance: none; appearance: none;
-  --seek: 0%;   /* optional: set from JS for filled progress */
 }
 #seekBar:focus-visible { outline: none; }
 #seekBar::-webkit-slider-runnable-track {
-  height: 4px; border-radius: 999px;
-  background: linear-gradient(90deg, var(--accent) var(--seek), var(--track) var(--seek));
+  height: 4px; border-radius: 999px; background: var(--track);
 }
 #seekBar::-moz-range-track { height: 4px; border-radius: 999px; background: var(--track); }
-#seekBar::-moz-range-progress { height: 4px; border-radius: 999px; background: var(--accent); }
 #seekBar::-webkit-slider-thumb {
   -webkit-appearance: none; appearance: none;
   width: 14px; height: 14px; margin-top: -5px; border-radius: 50%;
@@ -144,37 +249,46 @@ body {
   background: var(--accent); border: 2px solid var(--card);
 }
 #seekBar:hover::-webkit-slider-thumb { transform: scale(1.15); }
-#seekBar:focus-visible::-webkit-slider-thumb { box-shadow: var(--ring); }
 
 .ta-time { font-size: 11px; font-weight: 500; color: var(--muted); font-variant-numeric: tabular-nums; white-space: nowrap; }
 
-/* ---------- Generation progress (top edge) ---------- */
+/* ---------- Generation progress ---------- */
 .ta-progress { position: absolute; left: 0; right: 0; top: 0; height: 2px; z-index: 2; background: transparent; }
 .ta-progress-fill { height: 100%; width: 0%; background: var(--accent); transition: width .4s ease; }
 
-/* ---------- Small, muted supporting text ---------- */
-p, .muted, .hint, .footer p,
-.powered, .powered-by, .ta-powered, .ta-credit {
-  font-size: 11px; line-height: 1.45; font-weight: 400;
-  color: var(--muted); letter-spacing: .01em;
-}
-.powered, .powered-by, .ta-powered, .ta-credit {
-  display: block; margin-top: 10px; font-size: 10px; text-align: center; opacity: .85;
-}
-.powered a, .powered-by a, .ta-powered a, .ta-credit a, p a {
-  color: inherit; font-weight: 600; text-decoration: none;
-}
-.powered a:hover, .powered-by a:hover, .ta-powered a:hover, .ta-credit a:hover, p a:hover { color: var(--text); }
+/* ---------- Small text ---------- */
+p, .muted { font-size: 11px; line-height: 1.45; font-weight: 400; color: var(--muted); }
+p { display: block; margin-top: 10px; font-size: 10px; text-align: center; opacity: .85; }
+p a { color: inherit; font-weight: 600; text-decoration: none; }
+p a:hover { color: var(--text); }
 
 /* ---------- Responsive ---------- */
 @media (max-width: 480px) {
   body { padding: 4px; }
   .ta-widget { padding: 14px 14px 12px; }
-  .ta-status { display: none; }
+  .ta-status { display: none; } /* Hide status on mobile to save space */
   .ta-box { width: 46px; height: 46px; font-size: 17px; }
   .ta-controls { margin-left: auto; }
+  .ta-speed-toggle { margin-left: 0; } /* Adjust flex alignment */
+
+  .ta-ad img {
+    width: 300px;
+    height: 250px;
+    max-height: 250px;
+    object-fit: cover;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
   * { animation: none !important; transition: none !important; }
 }
+/* ---------- Voice Agent Gender Icons ---------- */
+.ta-tag-icon {
+  font-size: 13px;
+  line-height: 1;
+  margin-left: 2px;
+  opacity: 0.8;
+}
+.ta-tag-icon.f { color: #db2777; } /* Pink for Female */
+.ta-tag-icon.m { color: #2563eb; } /* Blue for Male */
+.ta-voice.active .ta-tag-icon { color: inherit; opacity: 0.9; }

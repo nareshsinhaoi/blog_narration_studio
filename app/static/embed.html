@@ -8,7 +8,14 @@
 </head>
 <body>
   <div class="ta-widget" id="widget" role="region" aria-label="Audio player">
+
+    <!-- Advertisement shown ONLY while waiting for article text -->
+    <div class="ta-ad" id="adSlot" hidden>
+      <img id="adImg" src="https://img-2.outlookindia.com/outlookindia/banners/2026/10/21/mobile-320x100.jpg" alt="Advertisement" />
+    </div>
+
     <div class="ta-voices" id="voiceBar" role="radiogroup" aria-label="Voice agent" hidden></div>
+    
     <div class="ta-top">
       <button class="ta-box" id="boxPlayBtn" type="button" aria-label="Play or pause" title="Play / Pause">
         <span id="boxIcon">▶</span>
@@ -18,19 +25,36 @@
         <button class="ta-btn" id="playBtn" type="button" title="Play or pause" aria-label="Play or pause">▶</button>
         <button class="ta-btn" id="fwdBtn" type="button" title="Forward 10 seconds" aria-label="Forward 10 seconds">+10s</button>
       </div>
+      
+      <!-- Toggle Button for Speed Bar -->
+      <button class="ta-speed-toggle" id="speedToggleBtn" type="button" title="Change speed" aria-label="Change playback speed">
+        <span id="speedToggleLabel">1.0×</span>
+      </button>
+      
       <div class="ta-status" id="statusText">Waiting for article…</div>
     </div>
+
+    <!-- Hidden by default, revealed when speed toggle is clicked -->
+    <div class="ta-speed-drawer" id="speedDrawer" hidden>
+      <div class="ta-slider" id="speedSlider">
+        <button class="ta-close-speed" id="closeSpeedBtn" type="button" aria-label="Close speed menu">✕</button>
+        <div class="bars"></div>
+        <div class="values"></div>
+      </div>
+    </div>
+
     <div class="ta-bottom">
       <input type="range" id="seekBar" min="0" max="1000" value="0" aria-label="Seek" />
       <span class="ta-time" id="timeLabel">0:00 / 0:00</span>
     </div>
+    
     <div class="ta-progress" id="genProgress" hidden>
       <div class="ta-progress-fill" id="genProgressFill"></div>
     </div>
+    
     <p class="text-muted">Crafted and maintained by <a href="https://github.com/nareshsinhaoi" target="_blank">@nareshsinha</a> / Blog Narration Studio 1.7.0</p>
   </div>
   <audio id="audio" preload="none"></audio>
-  <script src="/static/js/embed-player.js"></script>
-  
+  <script src="/static/js/embed-player-v2.js"></script>
 </body>
 </html>
