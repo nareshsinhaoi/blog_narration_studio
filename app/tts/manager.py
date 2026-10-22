@@ -8,7 +8,7 @@ import shutil
 import subprocess
 import threading
 import uuid
-import boto3 # or from vercel_blob import put
+#import boto3 # or from vercel_blob import put
 
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
@@ -215,8 +215,8 @@ class JobManager:
         with ID3v2 tags stripped from subsequent parts - playable in all
         browsers and media players even without ffmpeg installed.
         """
-        # ffmpeg = shutil.which("ffmpeg")
-        ffmpeg = "/var/task/bin/ffmpeg" # Path to your included binary
+        ffmpeg = shutil.which("ffmpeg")
+        #ffmpeg = "/var/task/bin/ffmpeg" # Path to your included binary
         
         if ffmpeg:
             try:
