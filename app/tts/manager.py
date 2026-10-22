@@ -8,7 +8,6 @@ import shutil
 import subprocess
 import threading
 import uuid
-#import boto3 # or from vercel_blob import put
 
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
@@ -118,6 +117,8 @@ class JobManager:
         self._lock = threading.Lock()
         self._tasks: set[asyncio.Task] = set()
         self._engines = {"edge": EdgeTTSEngine(), "google": GoogleTTSEngine()}
+        
+        # FIX: Use the configured data directory (e.g., /app/data/audio) instead of /tmp
         self.audio_dir = Path(self.settings.DATA_DIR) / self.settings.AUDIO_DIR_NAME
         self.audio_dir.mkdir(parents=True, exist_ok=True)
 
@@ -177,8 +178,9 @@ class JobManager:
             parts = await asyncio.to_thread(self._synthesize_chunks, engine, job, chunks)
             if job.status == "cancelled":
                 return
+            
+            # FIX: Save to the persistent audio directory, not /tmp
             out_path = self.audio_dir / f"{job.id}.mp3"
-            #out_path = Path("/tmp") / f"{job.id}.mp3" # Write to /tmp
             await asyncio.to_thread(self._stitch_to_file, job, parts, out_path)
             job.audio_path = str(out_path)
             job.progress = 1.0
@@ -216,7 +218,6 @@ class JobManager:
         browsers and media players even without ffmpeg installed.
         """
         ffmpeg = shutil.which("ffmpeg")
-        #ffmpeg = "/var/task/bin/ffmpeg" # Path to your included binary
         
         if ffmpeg:
             try:
