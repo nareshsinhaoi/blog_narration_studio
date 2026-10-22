@@ -177,8 +177,8 @@ class JobManager:
             parts = await asyncio.to_thread(self._synthesize_chunks, engine, job, chunks)
             if job.status == "cancelled":
                 return
-            #out_path = self.audio_dir / f"{job.id}.mp3"
-            out_path = Path("/tmp") / f"{job.id}.mp3" # Write to /tmp
+            out_path = self.audio_dir / f"{job.id}.mp3"
+            #out_path = Path("/tmp") / f"{job.id}.mp3" # Write to /tmp
             await asyncio.to_thread(self._stitch_to_file, job, parts, out_path)
             job.audio_path = str(out_path)
             job.progress = 1.0
