@@ -3,6 +3,7 @@ import logging
 
 from fastapi import APIRouter, HTTPException
 from fastapi.responses import FileResponse
+from fastapi.responses import RedirectResponse
 
 from ..config import get_settings
 from ..database import SessionLocal
@@ -86,14 +87,26 @@ def get_job(job_id: str) -> dict:
     return job.public()
 
 
+# @router.get("/tts/jobs/{job_id}/audio")
+# def job_audio(job_id: str) -> FileResponse:
+#     job = manager.get(job_id)
+#     if job is None or job.status != "completed" or not job.audio_path:
+#         raise HTTPException(status_code=404, detail="Audio not found or not ready.")
+#     return FileResponse(job.audio_path, media_type="audio/mpeg",
+#                         filename=f"vanitts-{job.id[:8]}.mp3")
+
 @router.get("/tts/jobs/{job_id}/audio")
-def job_audio(job_id: str) -> FileResponse:
+def job_audio(job_id: str):
     job = manager.get(job_id)
     if job is None or job.status != "completed" or not job.audio_path:
         raise HTTPException(status_code=404, detail="Audio not found or not ready.")
-    return FileResponse(job.audio_path, media_type="audio/mpeg",
-                        filename=f"vanitts-{job.id[:8]}.mp3")
-
+    
+    # If audio_path is a remote URL, redirect to it
+    if job.audio_path.startswith("http"):
+        return RedirectResponse(url=job.audio_path)
+    
+    # Fallback for local dev
+    return FileResponse(job.audio_path, media_type="audio/mpeg")
 
 @router.delete("/tts/jobs/{job_id}", status_code=204)
 def delete_job(job_id: str) -> None:

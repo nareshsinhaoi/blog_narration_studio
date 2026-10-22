@@ -8,6 +8,8 @@ import shutil
 import subprocess
 import threading
 import uuid
+import boto3 # or from vercel_blob import put
+
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from pathlib import Path
@@ -175,7 +177,8 @@ class JobManager:
             parts = await asyncio.to_thread(self._synthesize_chunks, engine, job, chunks)
             if job.status == "cancelled":
                 return
-            out_path = self.audio_dir / f"{job.id}.mp3"
+            #out_path = self.audio_dir / f"{job.id}.mp3"
+            out_path = Path("/tmp") / f"{job.id}.mp3" # Write to /tmp
             await asyncio.to_thread(self._stitch_to_file, job, parts, out_path)
             job.audio_path = str(out_path)
             job.progress = 1.0
@@ -212,7 +215,9 @@ class JobManager:
         with ID3v2 tags stripped from subsequent parts - playable in all
         browsers and media players even without ffmpeg installed.
         """
-        ffmpeg = shutil.which("ffmpeg")
+        # ffmpeg = shutil.which("ffmpeg")
+        ffmpeg = "/var/task/bin/ffmpeg" # Path to your included binary
+        
         if ffmpeg:
             try:
                 self._stitch_ffmpeg(ffmpeg, job, parts, out_path)
