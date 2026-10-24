@@ -18,13 +18,14 @@ const els = {
 
 const state = {
   engine: "edge",
-  language: "hi-IN",
+  language: document.querySelector(".lang-tab.active")?.dataset.lang || "en-IN",
   voices: [],
   selectedVoiceId: null,
   rate: 1.0,
   config: null,
   generatePoll: null,
   previewPoll: null,
+  clientId: new URLSearchParams(window.location.search).get("client") || "290001909",
 };
 
 /* ------------------------------ helpers ------------------------------ */
@@ -106,10 +107,14 @@ function updateEditorMetrics() {
 /* ------------------------------ voices ------------------------------ */
 
 async function loadVoices() {
+  state.selectedVoiceId = null;
   els.voiceList.innerHTML = `<p class="muted small">Loading voices…</p>`;
   try {
-    state.voices = await api(`/api/voices?engine=${state.engine}&language=${state.language}`);
+    state.voices = await api(
+      `/api/voices?engine=${state.engine}&language=${state.language}&client=${encodeURIComponent(state.clientId)}`
+    );
   } catch (e) {
+    state.voices = [];
     els.voiceList.innerHTML = `<p class="muted small">${e.message}</p>`;
     toast(e.message, "error");
     return;
@@ -249,7 +254,12 @@ async function generate() {
     const job = await api("/api/tts/jobs", {
       method: "POST",
       body: JSON.stringify({
-        text, voice_id: state.selectedVoiceId, engine: state.engine, rate: state.rate,
+        text,
+        voice_id: state.selectedVoiceId,
+        engine: state.engine,
+        rate: state.rate,
+        client: state.clientId,
+        lang: state.language,
       }),
     });
     const done = await pollJob(job.id, 900, (j) => {
@@ -279,7 +289,13 @@ async function previewVoice() {
   try {
     const job = await api("/api/tts/preview", {
       method: "POST",
-      body: JSON.stringify({ voice_id: state.selectedVoiceId, engine: state.engine, rate: state.rate }),
+      body: JSON.stringify({
+        voice_id: state.selectedVoiceId,
+        engine: state.engine,
+        rate: state.rate,
+        client: state.clientId,
+        lang: state.language,
+      }),
     });
     const done = await pollJob(job.id, 600, () => {});
     els.previewAudio.src = done.audio_url;

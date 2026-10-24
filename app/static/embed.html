@@ -4,14 +4,16 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, viewport-fit=cover" />
   <title>Blog Narration Studio</title>
-  <link rel="stylesheet" href="/static/css/embed.css" />
+  <link rel="stylesheet" href="/static/css/embed.css?version=2.0" />
 </head>
 <body>
   <div class="ta-widget" id="widget" role="region" aria-label="Audio player">
 
     <!-- Advertisement shown ONLY while waiting for article text -->
     <div class="ta-ad" id="adSlot" hidden>
-      <img id="adImg" src="https://img-2.outlookindia.com/outlookindia/banners/2026/10/21/mobile-320x100.jpg" alt="Advertisement" />
+      <a id="adLink" href="https://www.google.com/" target="_blank" rel="noopener noreferrer">
+        <img id="adImg" alt="Advertisement" />
+      </a>
     </div>
 
     <div class="ta-voices" id="voiceBar" role="radiogroup" aria-label="Voice agent" hidden></div>
@@ -52,7 +54,7 @@
       <div class="ta-progress-fill" id="genProgressFill"></div>
     </div>
     
-    <p class="text-muted">Crafted and maintained by <a href="https://github.com/nareshsinhaoi" target="_blank">@nareshsinha</a> / VaneeTTS 1.8.0</p>
+    <p class="text-muted">Crafted and maintained by <a href="https://github.com/nareshsinhaoi" target="_blank">@nareshsinha</a> / VaneeTTS (वाणी 2.0)</p>
   </div>
   <audio id="audio" preload="none"></audio>
   <script src="/static/js/embed-player-v2.js"></script>

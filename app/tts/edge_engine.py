@@ -90,24 +90,22 @@ STATIC_EDGE_VOICES = [
     Voice("en-IN-PrabhatNeural", "Prabhat", "en-IN", "English (India)", "Male", "edge"),
 ]
 
-SUPPORTED_LOCALES = ("hi-IN", "en-IN")
+#SUPPORTED_LOCALES = ("hi-IN", "en-IN")
+SUPPORTED_LOCALES = ("hi-IN", "en-IN", "en-SG", "en-TZ", "en-US")
+
 CACHE_TTL_SECONDS = 300
 RATE_MIN_PCT, RATE_MAX_PCT = -50, 100
 
 
 def _fetch_voice_catalog() -> list[dict]:
-    """Fetch the full edge-tts voice list. Runs in its own thread/loop so it is
-    safe to call from both sync code and inside a running asyncio loop."""
     import edge_tts
-
-    def _run() -> list[dict]:
+    def _run():
         return asyncio.run(edge_tts.list_voices())
-
     try:
         with concurrent.futures.ThreadPoolExecutor(max_workers=1) as pool:
             return pool.submit(_run).result(timeout=30)
-    except Exception as exc:  # network down / timeout / upstream change
-        log.warning("Could not fetch live voice catalog (%s); using static list", exc)
+    except Exception as exc:
+        print(f"=== ERROR FETCHING VOICES: {exc} ===") # ADD THIS LINE
         return []
 
 
@@ -161,11 +159,36 @@ class EdgeTTSEngine:
         return [v for v in self._load_catalog() if language is None or v.language == language]
 
     # ---------------------------------------------------------- synthesis
+    # def synthesize(self, text: str, voice_id: str, rate: float = 1.0) -> SynthesisResult:
+    #     pct = int(round((rate - 1.0) * 100))
+    #     pct = max(RATE_MIN_PCT, min(RATE_MAX_PCT, pct))
+    #     rate_str = f"{pct:+d}%"
+    #     audio = asyncio.run(self._stream(text, voice_id, rate_str))
+    #     if not audio:
+    #         raise RuntimeError(f"edge-tts returned no audio for voice {voice_id!r}.")
+    #     return SynthesisResult(audio=audio)
+
     def synthesize(self, text: str, voice_id: str, rate: float = 1.0) -> SynthesisResult:
+        import re
+        
+        # 1. Clean invisible characters ONLY
+        text = text.replace("\u200d", "").replace("\u200b", "").replace("\u00a0", " ")
+        text = re.sub(r'\s+', ' ', text).strip()
+        
+        if not text:
+            raise ValueError("Text is empty after sanitization.")
+
         pct = int(round((rate - 1.0) * 100))
         pct = max(RATE_MIN_PCT, min(RATE_MAX_PCT, pct))
         rate_str = f"{pct:+d}%"
-        audio = asyncio.run(self._stream(text, voice_id, rate_str))
+        
+        try:
+            audio = asyncio.run(self._stream(text, voice_id, rate_str))
+        except Exception as e:
+            log.warning(f"Edge TTS failed ({e}). Retrying...")
+            # DO NOT strip Devanagari. Just try again or raise.
+            raise RuntimeError(f"Edge TTS failed: {str(e)}")
+                
         if not audio:
             raise RuntimeError(f"edge-tts returned no audio for voice {voice_id!r}.")
         return SynthesisResult(audio=audio)

@@ -1,0 +1,28 @@
+annotations:
+  anybuild.run/config:
+    asgi_application: app.main:app
+    commands:
+      start: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    name: out
+    python_cross_platform: wasix_wasm32
+    python_extra_index_url: https://python-registry.wasix.org/simple
+    python_framework: fastapi
+    python_install_inputs:
+    - requirements.txt
+    python_main_file: app/main.py
+    python_server: uvicorn
+    services:
+    - engine: postgres
+      name: database
+  anybuild.run/provider: python
+  anybuild.run/version: 0.33.0
+  wasmer.io/version: 7.5.0
+app_id: da_2yGI9trUxeAk
+capabilities:
+  database:
+    engine: postgres
+enableDatabase: true
+kind: wasmer.io/App.v0
+name: python-oi_naresh1
+owner: oi_naresh1
+package: sha256:237be4e4367f316d40373368d92dc83d99823df2395c9779f0a0c244fc9b239e

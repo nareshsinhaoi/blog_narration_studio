@@ -28,6 +28,7 @@ const state = {
   userVoice: params.get("voice") || null,
   jobPoll: null,
   generating: false,
+  clientId: params.get("client") || "290001909",
 };
 
 /* ------------------------------ helpers ------------------------------ */
@@ -84,7 +85,7 @@ const GENDER_TAG = { Female: "F", Male: "M" };
 
 async function loadVoices() {
   try {
-    const voices = await api(`/api/voices?engine=${state.config.widget_engine}&language=en-IN`);
+    const voices = await api(`/api/voices?engine=${state.config.widget_engine}&language=en-IN&client=${encodeURIComponent(state.clientId)}`);
     const seen = new Set();
     state.voices = voices
       .filter((v) => v.language === "en-IN" && !seen.has(v.id) && seen.add(v.id))
@@ -137,7 +138,12 @@ async function tryCreateJob(text, voiceId) {
   return api("/api/tts/jobs", {
     method: "POST",
     body: JSON.stringify({
-      text, voice_id: voiceId, engine: state.config.widget_engine, rate: 1.0,
+      text,
+      voice_id: voiceId,
+      engine: state.config.widget_engine,
+      rate: 1.0,
+      client: state.clientId,
+      lang: "en-IN",
     }),
   });
 }
