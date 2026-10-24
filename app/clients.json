@@ -1,0 +1,26 @@
+{
+  "290001909": {
+    "name": "LOCAL_SYS",
+    "expiry_date": "2027-12-31",
+    "ad_image":  "https://upload.wikimedia.org/wikipedia/commons/5/52/Spacer.gif",
+    "ad_link": "http://anywebsite.com"
+  },
+  "290001910": {
+    "name": "Apni Baat",
+    "expiry_date": "2026-12-31",
+    "ad_image":  "https://img-2.outlookindia.com/outlookindia/banners/janmashtami-340x90.png",
+    "ad_link": "https://hrms.modulelabs.in/"
+  },
+  "290001911": {
+    "name": "Outlook Business",
+    "expiry_date": "2026-10-31",
+    "ad_image": "https://img-2.outlookindia.com/outlookindia/banners/2026/10/21/mobile-320x100.jpg",
+    "ad_link": "https://www.outlookmoney.com/retirement/forty-after-forty"
+  },
+  "290001912": {
+    "name": "Outlook India",
+    "expiry_date": "2026-11-30",
+    "ad_image": "https://img-2.outlookindia.com/outlookindia/banners/2026/10/23/grt-banner-320x100.jpg",
+    "ad_link": "https://www.outlooktraveller.com/irtsa/meghalaya-2026"
+  }
+}

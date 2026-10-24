@@ -17,6 +17,8 @@ const els = {
   genProgress: $("genProgress"), genProgressFill: $("genProgressFill"),
 };
 
+const params = new URLSearchParams(window.location.search);
+
 const state = {
   config: null,
   voices: [],              // en-IN agents from the API
@@ -27,6 +29,7 @@ const state = {
   regenTimer: null,
   wantRegen: false,
   lastText: "",
+  clientId: params.get("client") || "290001909",
 };
 
 /* ------------------------------ helpers ------------------------------ */
@@ -110,7 +113,7 @@ const GENDER_TAG = { Female: "F", Male: "M" };
 async function loadVoices() {
   try {
     const voices = await api(
-      `/api/voices?engine=${state.config.widget_engine}`
+      `/api/voices?engine=${state.config.widget_engine}&client=${encodeURIComponent(state.clientId)}`
     );
 
     // Filter all Indian voices, remove duplicates, and show females first
@@ -196,6 +199,8 @@ async function tryCreateJob(text, voiceId) {
     method: "POST",
     body: JSON.stringify({
       text, voice_id: voiceId, engine: state.config.widget_engine, rate: 1.0,
+      client: state.clientId,
+      lang: state.voices.find((voice) => voice.id === voiceId)?.language || "en-IN",
     }),
   });
 }

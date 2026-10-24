@@ -8,6 +8,8 @@ class JobCreate(BaseModel):
     engine: str = "edge"
     rate: float = Field(1.0, ge=0.5, le=2.0)   # was ge=0.5
     #rate: float = Field(1.0, ge=0.5, le=2.0, description="Speaking-rate multiplier")
+    client: str  # NEW
+    lang: str = "en-IN" # NEW
 
 
 class PreviewRequest(BaseModel):
@@ -15,6 +17,8 @@ class PreviewRequest(BaseModel):
     engine: str = "edge"
     rate: float = Field(1.0, ge=0.5, le=2.0)
     #rate: float = Field(1.0, ge=0.5, le=2.0)
+    client: str  # NEW
+    lang: str = "en-IN" # NEW
 
 
 class VoiceOut(BaseModel):

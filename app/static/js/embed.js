@@ -1,16 +1,5 @@
-/* VaniTTS embed helper - include on your blog page:
- *
- *   <div id="vanitts-player"></div>
- *   <script src="http://localhost:8006/static/js/embed.js"></script>
- *   <script>
- *     VaniTTS.mount("#vanitts-player", { text: longArticleText });
- *   </script>
- *
- * Options:
- *   text   - full article text (any length; sent via postMessage)
- *   voice  - optional initial voice id (e.g. "en-IN-PrabhatNeural")
- *   server - override the TTS server origin if you host embed.js yourself
- */
+/* VaneeTTS embed helper - v1.9.0 */
+
 (function () {
   "use strict";
 
@@ -28,12 +17,17 @@
 
     var iframe = document.createElement("iframe");
     var qs = new URLSearchParams();
-    if (opts.voice) qs.set("voice", opts.voice);
+
+    // NEW: Pass client, lang, and voice into the iframe URL
+    if (opts.client) qs.set("client", opts.client);
+    if (opts.lang) qs.set("lang", opts.lang);
+    if (opts.voice) qs.set("voice", opts.voice); 
+    
     iframe.src = host + "/embed?" + qs.toString();
     iframe.setAttribute("title", "VaniTTS audio player");
     iframe.setAttribute("allow", "autoplay");
     iframe.style.cssText =
-      "width:100%;max-width:760px;border:0;overflow:hidden;display:block;height:120px;background:transparent;";
+      "width:100%;max-width:760px;border:0;overflow:hidden;display:block;height:300px;background:transparent;margin:auto;";
     el.appendChild(iframe);
 
     window.addEventListener("message", function (event) {

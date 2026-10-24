@@ -1,7 +1,7 @@
 """REST API endpoints."""
 import logging
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Query
 from fastapi.responses import FileResponse
 # from fastapi.responses import RedirectResponse
 
@@ -10,6 +10,7 @@ from ..database import SessionLocal
 from ..models import JobRecord
 from ..schemas import JobCreate, PreviewRequest, VoiceOut
 from ..tts.manager import JobManager
+from .auth import validate_client  # Import the validate_client function
 
 log = logging.getLogger("tts.api")
 router = APIRouter(prefix="/api", tags=["tts"])
@@ -28,8 +29,9 @@ def health() -> dict:
 
 
 @router.get("/config")
-def config() -> dict:
-    return {
+def config(client: str | None = Query(None)) -> dict:
+    client_config = validate_client(client) if client else None
+    response = {
         "app_name": settings.APP_NAME,
         "max_input_chars": settings.MAX_INPUT_CHARS,
         "default_engine": settings.DEFAULT_ENGINE,
@@ -41,20 +43,50 @@ def config() -> dict:
         "auto_generate_on_load": True,
         "estimate_words_per_minute": 140,
     }
+    if client_config is not None:
+        response["ad_image"] = client_config.get("ad_image")
+        response["ad_link"] = client_config.get("ad_link")
+    return response
 
+
+# @router.get("/voices")
+# def voices(
+#     engine: str = "edge", 
+#     language: str | None = None,
+#     client: str = Query(None) # Add client validation here
+#     ) -> list[VoiceOut]:
+#     validate_client(client) # This will now throw a 403 if expired
+#     try:
+#         return [_voice_out(v) for v in manager.list_voices(engine, language)]
+#     except ValueError as exc:
+#         raise HTTPException(status_code=400, detail=str(exc))
+#     except RuntimeError as exc:
+#         raise HTTPException(status_code=502, detail=str(exc))
 
 @router.get("/voices")
-def voices(engine: str = "edge", language: str | None = None) -> list[VoiceOut]:
+def voices(
+    engine: str = "edge", 
+    language: str | None = None,
+    client: str | None = Query(None)
+) -> list[VoiceOut]:
+    # 1. Validate FIRST so a 403/401 is thrown before anything else
+    validate_client(client) 
+    
     try:
+        # 2. Fetch voices
         return [_voice_out(v) for v in manager.list_voices(engine, language)]
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc))
     except RuntimeError as exc:
         raise HTTPException(status_code=502, detail=str(exc))
+    except Exception:
+        log.exception("Failed to load voices")
+        raise HTTPException(status_code=500, detail="Unable to load voices.")
 
 
 @router.post("/tts/jobs", status_code=202)
 async def create_job(payload: JobCreate) -> dict:
+    validate_client(payload.client) # NEW: Validate before processing
     text = payload.text.strip()
     if not text:
         raise HTTPException(status_code=422, detail="Text is required.")
@@ -62,7 +94,7 @@ async def create_job(payload: JobCreate) -> dict:
         raise HTTPException(status_code=413,
                             detail=f"Text exceeds the {settings.MAX_INPUT_CHARS:,} character limit.")
     try:
-        job = manager.create_job(text, payload.voice_id, payload.engine, payload.rate)
+        job = manager.create_job(text, payload.voice_id, payload.engine, payload.rate, payload.lang)
     except (ValueError, RuntimeError) as exc:
         raise HTTPException(status_code=400, detail=str(exc))
     manager.submit(job.id)
@@ -71,8 +103,9 @@ async def create_job(payload: JobCreate) -> dict:
 
 @router.post("/tts/preview", status_code=202)
 async def preview(payload: PreviewRequest) -> dict:
+    validate_client(payload.client) # NEW: Validate before processing   
     try:
-        job = manager.create_preview(payload.voice_id, payload.engine, payload.rate)
+        job = manager.create_preview(payload.voice_id, payload.engine, payload.rate, payload.lang)
     except (ValueError, RuntimeError) as exc:
         raise HTTPException(status_code=400, detail=str(exc))
     manager.submit(job.id)

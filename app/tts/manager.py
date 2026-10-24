@@ -10,7 +10,7 @@ import threading
 import uuid
 
 from dataclasses import dataclass, field
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 from ..config import get_settings
@@ -24,7 +24,6 @@ log = logging.getLogger("tts.manager")
 
 _SENTENCE_RE = re.compile(r"[^.!?।\n]+[.!?।]*[\s]*", re.UNICODE)
 _PARA_SPLIT_RE = re.compile(r"\n+")
-
 
 def split_into_chunks(text: str, max_chars: int = 1500) -> list[str]:
     """Split long text on paragraph / sentence boundaries (supports Hindi danda '।')."""
@@ -53,7 +52,7 @@ def split_into_chunks(text: str, max_chars: int = 1500) -> list[str]:
             if len(current) + len(sentence) + 1 > max_chars:
                 flush()
             current = f"{current} {sentence}".strip()
-        flush()  # paragraph boundary keeps natural flow
+        flush()
     flush()
     return chunks
 
@@ -111,6 +110,8 @@ class Job:
 class JobManager:
     """In-memory job store with background (asyncio) processing."""
 
+    AUDIO_FILE_RETENTION = timedelta(hours=12)
+
     def __init__(self) -> None:
         self.settings = get_settings()
         self.jobs: dict[str, Job] = {}
@@ -135,22 +136,23 @@ class JobManager:
                 "For 'google', set GOOGLE_APPLICATION_CREDENTIALS (or use engine='edge', free)."
             ) from exc
 
-    def get_voice(self, engine: str, voice_id: str):
-        for v in self.list_voices(engine):
+    def get_voice(self, engine: str, voice_id: str, lang: str | None = None):
+        voices = self.list_voices(engine, lang)
+        for v in voices:
             if v.id == voice_id:
                 return v
-        raise ValueError(f"Voice {voice_id!r} is not available on engine {engine!r}.")
+        raise ValueError(f"Voice {voice_id!r} is not available on engine {engine!r} for language {lang!r}.")
 
     # ------------------------------------------------------------ lifecycle
-    def create_job(self, text: str, voice_id: str, engine: str, rate: float) -> Job:
-        self.get_voice(engine, voice_id)  # validates engine + voice compatibility
+    def create_job(self, text: str, voice_id: str, engine: str, rate: float, lang: str = "en-IN") -> Job:
+        self.get_voice(engine, voice_id, lang) 
         job = Job(id=uuid.uuid4().hex[:12], text=text, voice_id=voice_id, engine=engine, rate=rate)
         with self._lock:
             self.jobs[job.id] = job
         return job
 
-    def create_preview(self, voice_id: str, engine: str, rate: float) -> Job:
-        voice = self.get_voice(engine, voice_id)
+    def create_preview(self, voice_id: str, engine: str, rate: float, lang: str) -> Job:
+        voice = self.get_voice(engine, voice_id, lang)
         sample = SAMPLE_TEXTS.get(voice.language) or SAMPLE_TEXTS["en-IN"]
         job = Job(id=uuid.uuid4().hex[:12], text=sample, voice_id=voice_id,
                   engine=engine, rate=rate, is_preview=True)
@@ -179,7 +181,7 @@ class JobManager:
             if job.status == "cancelled":
                 return
             
-            # FIX: Save to the persistent audio directory, not /tmp
+            self._remove_expired_audio_files()
             out_path = self.audio_dir / f"{job.id}.mp3"
             await asyncio.to_thread(self._stitch_to_file, job, parts, out_path)
             job.audio_path = str(out_path)
@@ -194,11 +196,48 @@ class JobManager:
                 job.error = str(exc)[:500]
                 log.exception("Job %s failed", job.id)
 
+    def _remove_expired_audio_files(self) -> int:
+        cutoff = (datetime.now(timezone.utc) - self.AUDIO_FILE_RETENTION).timestamp()
+        removed = 0
+
+        for path in self.audio_dir.iterdir():
+            if not path.is_file() or path.stat().st_mtime >= cutoff:
+                continue
+            try:
+                path.unlink()
+            except OSError:
+                log.exception("Could not remove expired audio file %s", path)
+                raise
+            removed += 1
+
+        if removed:
+            log.info("Removed %d audio files older than 12 hours", removed)
+        return removed
+
+    # def _synthesize_chunks(self, engine, job: Job, chunks: list[str]) -> list[bytes]:
+    #     parts: list[bytes] = []
+    #     for chunk in chunks:
+    #         if job.status == "cancelled":
+    #             break
+    #         result = engine.synthesize(chunk, job.voice_id, rate=job.rate)
+    #         parts.append(result.audio)
+    #         job.done_chunks += 1
+    #         job.progress = job.done_chunks / max(job.total_chunks, 1)
+    #         log.info("Job %s: chunk %d/%d", job.id, job.done_chunks, job.total_chunks)
+    #     if not parts:
+    #         raise RuntimeError("Synthesis produced no audio.")
+    #     return parts
+
     def _synthesize_chunks(self, engine, job: Job, chunks: list[str]) -> list[bytes]:
         parts: list[bytes] = []
         for chunk in chunks:
             if job.status == "cancelled":
                 break
+            
+            # REMOVE or comment out the Danda replacement for now
+            # if any('\u0900' <= c <= '\u097F' for c in chunk):
+            #     chunk = chunk.replace("।", ".")
+                
             result = engine.synthesize(chunk, job.voice_id, rate=job.rate)
             parts.append(result.audio)
             job.done_chunks += 1
