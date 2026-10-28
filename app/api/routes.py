@@ -1,7 +1,7 @@
 """REST API endpoints."""
 import logging
-
-from fastapi import APIRouter, HTTPException, Query
+from pathlib import Path
+from fastapi import APIRouter, HTTPException, Query, Request, Response
 from fastapi.responses import FileResponse
 # from fastapi.responses import RedirectResponse
 
@@ -10,7 +10,8 @@ from ..database import SessionLocal
 from ..models import JobRecord
 from ..schemas import JobCreate, PreviewRequest, VoiceOut
 from ..tts.manager import JobManager
-from .auth import validate_client  # Import the validate_client function
+from pydantic import BaseModel
+from .auth import validate_client, verify_static_login, create_session, require_session, end_session
 
 log = logging.getLogger("tts.api")
 router = APIRouter(prefix="/api", tags=["tts"])
@@ -21,6 +22,31 @@ manager = JobManager()
 def _voice_out(v) -> VoiceOut:
     return VoiceOut(id=v.id, name=v.name, language=v.language,
                     language_label=v.language_label, gender=v.gender, engine=v.engine)
+
+
+class LoginRequest(BaseModel):
+    username: str
+    password: str
+
+
+@router.post("/auth/login")
+def login(payload: LoginRequest, response: Response) -> dict:
+    if not verify_static_login(payload.username.strip(), payload.password):
+        raise HTTPException(status_code=401, detail="Invalid username or password.")
+    create_session(response)
+    return {"status": "ok", "username": payload.username.strip()}
+
+
+@router.post("/auth/logout")
+def logout(request: Request, response: Response) -> dict:
+    end_session(request, response)
+    return {"status": "ok"}
+
+
+@router.get("/auth/session")
+def auth_session(request: Request) -> dict:
+    require_session(request)
+    return {"authenticated": True}
 
 
 @router.get("/health")
@@ -121,12 +147,23 @@ def get_job(job_id: str) -> dict:
 
 
 @router.get("/tts/jobs/{job_id}/audio")
-def job_audio(job_id: str) -> FileResponse:
+def job_audio(job_id: str, request: Request) -> FileResponse:
+    require_session(request)
     job = manager.get(job_id)
-    if job is None or job.status != "completed" or not job.audio_path:
-        raise HTTPException(status_code=404, detail="Audio not found or not ready.")
-    return FileResponse(job.audio_path, media_type="audio/mpeg",
-                        filename=f"vanitts-{job.id[:8]}.mp3")
+    if job is not None:
+        if job.status != "completed" or not job.audio_path:
+            raise HTTPException(status_code=404, detail="Audio not found or not ready.")
+        audio_path = job.audio_path
+    else:
+        with SessionLocal() as session:
+            record = session.query(JobRecord).filter(JobRecord.id == job_id).first()
+        if not record or record.status != "completed" or not record.audio_path:
+            raise HTTPException(status_code=404, detail="Audio not found or not ready.")
+        audio_path = record.audio_path
+    if not Path(audio_path).is_file():
+        raise HTTPException(status_code=404, detail="Audio file is missing.")
+    return FileResponse(audio_path, media_type="audio/mpeg",
+                        filename=f"vanitts-{job_id[:8]}.mp3")
 
 # @router.get("/tts/jobs/{job_id}/audio")
 # def job_audio(job_id: str):
@@ -142,13 +179,15 @@ def job_audio(job_id: str) -> FileResponse:
 #     return FileResponse(job.audio_path, media_type="audio/mpeg")
 
 @router.delete("/tts/jobs/{job_id}", status_code=204)
-def delete_job(job_id: str) -> None:
+def delete_job(job_id: str, request: Request) -> None:
+    require_session(request)
     if not manager.delete(job_id):
         raise HTTPException(status_code=404, detail="Job not found.")
 
 
 @router.get("/tts/history")
-def history(limit: int = 50) -> list[dict]:
+def history(request: Request, limit: int = 50) -> list[dict]:
+    require_session(request)
     if not settings.PERSIST_HISTORY:
         return []
     limit = max(1, min(limit, 200))
@@ -156,10 +195,20 @@ def history(limit: int = 50) -> list[dict]:
         rows = (session.query(JobRecord)
                 .order_by(JobRecord.created_at.desc())
                 .limit(limit).all())
-    return [{
-        "id": r.id, "voice_id": r.voice_id, "engine": r.engine, "rate": r.rate,
-        "status": r.status,
-        "audio_url": f"/api/tts/jobs/{r.id}/audio" if r.status == "completed" and r.audio_path else None,
-        "created_at": r.created_at.isoformat() if r.created_at else None,
-        "text_preview": r.text_preview,
-    } for r in rows]
+    result = []
+    for r in rows:
+        audio_exists = bool(r.audio_path and Path(r.audio_path).is_file())
+        if r.status == "completed" and r.audio_path and not audio_exists:
+            continue
+        result.append({
+            "id": r.id, "voice_id": r.voice_id, "engine": r.engine, "rate": r.rate,
+            "status": r.status,
+            "title": (r.text_preview or "Generated audio")[:80].replace("\n", " "),
+            "file_name": Path(r.audio_path).name if r.audio_path else None,
+            "duration_seconds": round((len(r.text_preview or "") / 840) * 60 / max(r.rate or 1, 0.1), 1) if r.text_preview else None,
+            "file_size": Path(r.audio_path).stat().st_size if audio_exists else None,
+            "audio_url": f"/api/tts/jobs/{r.id}/audio" if r.status == "completed" and audio_exists else None,
+            "created_at": r.created_at.isoformat() if r.created_at else None,
+            "text_preview": r.text_preview,
+        })
+    return result

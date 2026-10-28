@@ -344,6 +344,14 @@ function bindEvents() {
   els.generateBtn.addEventListener("click", generate);
   els.previewBtn.addEventListener("click", previewVoice);
 
+  const logoutBtn = $("logoutBtn");
+  if (logoutBtn) {
+    logoutBtn.addEventListener("click", async () => {
+      await fetch("/api/auth/logout", { method: "POST" });
+      location.replace("/login");
+    });
+  }
+
   document.addEventListener("keydown", (e) => {
     if ((e.ctrlKey || e.metaKey) && e.key === "Enter") {
       e.preventDefault();

@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Audio Library · Vanee TTS</title>
+  <link rel="stylesheet" href="/static/css/style.css">
+  <link rel="stylesheet" href="/static/css/auth.css">
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand app-nav-brand" href="/dashboard"><div class="logo"><img src="/static/logo-70x70.png" alt="Vanee TTS"></div><div><h1>Vanee TTS</h1><p>Audio Library</p></div></a>
+    <nav class="topbar-actions" aria-label="Main navigation"><a class="btn ghost nav-link" href="/dashboard">Dashboard</a><button class="btn ghost" id="logoutBtn" type="button">Logout</button></nav>
+  </header>
+  <main class="audio-page"><div class="audio-page-head"><div><h2>Generated Audio</h2><p class="muted">Manage and download generated audio files</p></div><button class="btn ghost" id="refreshBtn" type="button">Refresh</button></div>
+    <div class="toast-wrap audio-toast" id="toastWrap" aria-live="polite"></div>
+    <div class="audio-grid" id="audioGrid"><p class="muted">Loading audio files…</p></div>
+  </main>
+  <script src="/static/js/audio.js"></script>
+</body>
+</html>
