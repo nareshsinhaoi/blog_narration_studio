@@ -314,15 +314,31 @@ class JobManager:
 
     def delete(self, job_id: str) -> bool:
         job = self.jobs.pop(job_id, None)
-        if job is None:
-            return False
-        job.status = "cancelled"
-        if job.audio_path:
+        if job is not None:
+            job.status = "cancelled"
+            if job.audio_path:
+                try:
+                    Path(job.audio_path).unlink(missing_ok=True)
+                except OSError:
+                    log.warning("Could not delete audio file %s", job.audio_path)
+
+        deleted_record = False
+        if self.settings.PERSIST_HISTORY:
             try:
-                Path(job.audio_path).unlink(missing_ok=True)
-            except OSError:
-                log.warning("Could not delete audio file %s", job.audio_path)
-        return True
+                with SessionLocal() as session:
+                    record = session.query(JobRecord).filter(JobRecord.id == job_id).first()
+                    if record:
+                        if record.audio_path:
+                            try:
+                                Path(record.audio_path).unlink(missing_ok=True)
+                            except OSError:
+                                log.warning("Could not delete audio file %s", record.audio_path)
+                        session.delete(record)
+                        session.commit()
+                        deleted_record = True
+            except Exception:
+                log.exception("Failed to remove history record %s", job_id)
+        return job is not None or deleted_record
 
     def cleanup_expired(self) -> int:
         now = datetime.now(timezone.utc)

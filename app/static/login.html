@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login · Vanee TTS</title>
+  <link rel="stylesheet" href="/static/css/style.css">
+  <link rel="stylesheet" href="/static/css/auth.css">
+</head>
+<body class="auth-body">
+  <main class="login-shell">
+    <section class="login-card" aria-labelledby="loginTitle">
+      <div class="login-brand"><div class="brand-mark">♪</div><div><strong>Vanee TTS</strong><span>Blog Narration Studio</span></div></div>
+      <h1 id="loginTitle">Welcome back</h1><p class="login-subtitle">Sign in to access the dashboard</p>
+      <div class="form-error" id="formError" role="alert" hidden></div>
+      <form id="loginForm">
+        <label for="username">Username</label><input id="username" name="username" autocomplete="username" required autofocus>
+        <label for="password">Password</label><input id="password" name="password" type="password" autocomplete="current-password" required>
+        <button class="btn primary login-button" id="loginButton" type="submit">Sign in</button>
+      </form>
+    </section>
+  </main>
+  <script src="/static/js/auth.js"></script>
+</body>
+</html>

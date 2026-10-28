@@ -2,6 +2,22 @@
 
 All notable changes to VaniTTS Blog Narration Studio are documented here.
 
+## [2.5.0] - 2026-10-28
+
+### Added
+- Login  users and HTTP-only session authentication; database is used for login credentials.
+- Protected dashboard, player, audio library, and internal API routes for unauthenticated access.
+- Dashboard and audio-library navigation with logout support.
+- Audio listing page showing generated audio titles, file names, estimated durations, upload dates, file sizes, and playback controls.
+- Audio deletion with browser confirmation, success/error feedback, immediate listing updates, and physical MP3 plus history-record removal.
+
+### Changed
+- Updated the root application route to redirect unauthenticated users to the login page.
+- Centralized audio-library actions on the existing FastAPI job storage and history APIs.
+
+### Fixed
+- Corrected FastAPI response annotations so protected page routes work with both file and redirect responses.
+
 ## [2.0.0] - 2026-10-24
 
 ### Added
