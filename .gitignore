@@ -3,6 +3,7 @@ __pycache__/
 *.pyc
 *.pyo
 *.mp3
+*.db
 .env
 uploads/*
 !uploads/.gitkeep
@@ -10,9 +11,12 @@ outputs/*
 !outputs/.gitkeep
 .DS_Store
 *.log
+*.db
 dist/
 dist
 build/
 build
 images/
 images
+data
+data/
